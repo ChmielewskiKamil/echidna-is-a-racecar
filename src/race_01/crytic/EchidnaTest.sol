@@ -7,21 +7,36 @@ pragma solidity 0.7.0;
 /// Addresses.sol also imports all of the necessary project contracts.
 /// That's why we don't have to explicitly import them here.
 import {Addresses} from "./utils/Addresses.sol";
+import {PropertiesAsserts} from "./utils/PropertiesHelper.sol";
 
 /// @dev Run Echidna tests with:
 /// echidna src/race_01/crytic/EchidnaTest.sol --contract EchidnaTest --config src/race_01/crytic/echidna_config.yaml
 /// @notice Look at the .env file. You need to set the Echidna RPC settings,
 /// for the fork mode to work. Also make sure that you have Anvil running,
 /// with all the contracts deployed with `forge script`.
-contract EchidnaTest is Addresses {
+contract EchidnaTest is Addresses, PropertiesAsserts {
 
-    function token_should_be_deployed() public view {
-        assert(address(token) == address(0x057ef64E23666F000b34aE31332854aCBd1c8544));
-    }
-
-    function total_supply_should_be_le_max_supply() public view {
+    function total_supply_should_be_lte_max_supply() public {
         uint256 totalSupply = token.totalSupply();
         uint256 maxSupply = 100 ether;
-        assert(totalSupply <= maxSupply);
+        assertLte(totalSupply, maxSupply, "Total supply is greater than max supply.");
     }
+
+    function buying_tokens_for_free_should_not_be_possible(uint256 desired_tokens) public payable {
+        // preconditions
+        require(msg.value == 0);
+        uint256 senderEtherBalanceBefore = msg.sender.balance;
+        uint256 senderTokenBalanceBefore = token.balances(msg.sender);
+
+        // action
+        token.buy(desired_tokens);
+
+        // postconditions
+        uint256 senderEtherBalanceAfter = msg.sender.balance;
+        uint256 senderTokenBalanceAfter = token.balances(msg.sender);
+        assertEq(senderEtherBalanceBefore, senderEtherBalanceAfter, "Ether balance should not change.");
+        assertEq(senderTokenBalanceBefore, senderTokenBalanceAfter, "Token balance should not change.");
+    }
+
+
 }
