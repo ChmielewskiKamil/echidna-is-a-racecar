@@ -1,0 +1,5 @@
+testMode: assertion
+corpusDir: 'src/race_01/crytic/corpus'
+testLimit: 50000 
+# multi-abi: true
+# format: text
