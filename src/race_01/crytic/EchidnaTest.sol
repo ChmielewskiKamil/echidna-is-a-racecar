@@ -14,7 +14,14 @@ import {Addresses} from "./utils/Addresses.sol";
 /// for the fork mode to work. Also make sure that you have Anvil running,
 /// with all the contracts deployed with `forge script`.
 contract EchidnaTest is Addresses {
+
     function token_should_be_deployed() public view {
-        assert(address(token) != address(0));
+        assert(address(token) == address(0x057ef64E23666F000b34aE31332854aCBd1c8544));
+    }
+
+    function total_supply_should_be_le_max_supply() public view {
+        uint256 totalSupply = token.totalSupply();
+        uint256 maxSupply = 100 ether;
+        assert(totalSupply <= maxSupply);
     }
 }
