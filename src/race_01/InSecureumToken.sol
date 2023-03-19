@@ -31,7 +31,8 @@ contract InSecureumToken {
         // @audit-issue - If desired_tokens < 10, then required_wei_sent will
         // be rounded down to 0
         // multiply before dividing
-        uint256 required_wei_sent = (desired_tokens / 10) * decimals;
+        uint256 required_wei_sent = (desired_tokens * decimals) / 10;
+        // uint256 required_wei_sent = (desired_tokens / 10) * decimals;
         require(msg.value >= required_wei_sent);
 
         // Mint the tokens
