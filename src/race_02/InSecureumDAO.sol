@@ -1,6 +1,6 @@
 pragma solidity 0.8.4;
-import 'https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/security/ReentrancyGuard.sol';
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/security/Pausable.sol";
+import 'openzeppelin-contracts/contracts/security/ReentrancyGuard.sol';
+import "openzeppelin-contracts/contracts/security/Pausable.sol";
 
 contract InSecureumDAO is Pausable, ReentrancyGuard {
     
