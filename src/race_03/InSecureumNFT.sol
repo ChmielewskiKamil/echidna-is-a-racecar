@@ -21,16 +21,18 @@ contract InSecureumNFT {
     bool public publicSale = false;
     uint256 private price;
     uint256 public saleStartTime;
+    // @audit - Add `seconds` keyword for clarity
     uint256 public constant saleDuration = 13 * 13337; // 13337 blocks assuming 13s block times
     uint256 internal nonce = 0;
     uint256[TOKEN_LIMIT] internal indices;
-
+    // @audit-issue - Missing 0 addr check
     constructor(address payable _beneficiary) {
         deployer = payable(msg.sender);
         beneficiary = _beneficiary;
     }
 
     function startSale(uint256 _price) external {
+        // @audit-issue - || is "or" not "and" operator
         require(msg.sender == deployer || _price != 0, "Only deployer and price cannot be zero");
         price = _price;
         saleStartTime = block.timestamp;
@@ -47,6 +49,7 @@ contract InSecureumNFT {
 
     function randomIndex() internal returns (uint256) {
         uint256 totalSize = TOKEN_LIMIT - numTokens;
+        // @audit-issue - Weak source of randomness - block.timestamp
         uint256 index =
             uint256(keccak256(abi.encodePacked(nonce, msg.sender, block.difficulty, block.timestamp))) % totalSize;
         uint256 value = 0;
@@ -83,6 +86,7 @@ contract InSecureumNFT {
         numSales++;
         uint256 salePrice = getPrice();
         require((address(this)).balance >= salePrice, "Insufficient funds to purchase.");
+        // @audit-issue - msg.sender can reenter and drain contract balance
         if ((address(this)).balance >= salePrice) {
             payable(msg.sender).transfer((address(this)).balance - salePrice);
         }
