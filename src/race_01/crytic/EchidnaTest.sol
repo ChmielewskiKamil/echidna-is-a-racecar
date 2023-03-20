@@ -9,6 +9,7 @@ pragma solidity 0.7.0;
 import {Addresses} from "./utils/Addresses.sol";
 import {PropertiesAsserts} from "./utils/PropertiesHelper.sol";
 
+
 /// @dev Run Echidna tests with:
 /// echidna src/race_01/crytic/EchidnaTest.sol --contract EchidnaTest --config src/race_01/crytic/echidna_config.yaml
 /// @notice Look at the .env file. You need to set the Echidna RPC settings,
@@ -47,11 +48,11 @@ contract EchidnaTest is Addresses, PropertiesAsserts {
         uint256 ether_sent = msg.value;
         emit SenderBalance(senderEtherBalanceBefore);
 
+        require(desired_tokens > 0 && ether_sent > 0 && ether_sent <= senderEtherBalanceBefore);
         // action
         try token.buy{value: ether_sent}(desired_tokens) {
             // token.buy is successful
             // postconditions
-            require(desired_tokens > 0 && ether_sent > 0);
             uint256 senderEtherBalanceAfter = msg.sender.balance;
             uint256 senderTokenBalanceAfter = token.balances(msg.sender);
             assertEq(senderEtherBalanceBefore - ether_sent, senderEtherBalanceAfter, "Ether balance should decrease.");
