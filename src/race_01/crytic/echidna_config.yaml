@@ -1,0 +1,8 @@
+testMode: assertion
+corpusDir: 'src/race_01/crytic/corpus'
+testLimit: 50000 
+allContracts: false
+sender: ['0x30000']
+# multi-abi will be deprecated soon
+# multi-abi: true
+# format: text

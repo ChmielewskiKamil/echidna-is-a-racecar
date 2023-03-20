@@ -10,6 +10,7 @@ contract Deployment is Script {
         uint256 deployerPrivateKey = vm.envUint("ANVIL_PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
         InSecureumToken token = new InSecureumToken();
+        address(0x30000).call{value: 500 ether}("");
         vm.stopBroadcast();
     }
 }
