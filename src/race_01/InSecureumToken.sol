@@ -1,5 +1,6 @@
 pragma solidity 0.7.0;
 
+// @audit-issue Contract locks ether, there is no way to withdraw the funds
 contract InSecureumToken {
     // @audit-info - private -> public for testing purposes
     mapping(address => uint256) public balances;
@@ -19,6 +20,7 @@ contract InSecureumToken {
         uint256 balance_from = balances[msg.sender];
         uint256 balance_to = balances[to];
         require(balance_from >= amount);
+        // @audit Can this underflow?
         balances[msg.sender] = balance_from - amount;
         balances[to] = safeAdd(balance_to, amount);
     }
@@ -31,8 +33,8 @@ contract InSecureumToken {
         // @audit-issue - If desired_tokens < 10, then required_wei_sent will
         // be rounded down to 0
         // multiply before dividing
-        uint256 required_wei_sent = (desired_tokens * decimals) / 10;
-        // uint256 required_wei_sent = (desired_tokens / 10) * decimals;
+        // uint256 required_wei_sent = (desired_tokens * decimals) / 10;
+        uint256 required_wei_sent = (desired_tokens / 10) * decimals;
         require(msg.value >= required_wei_sent);
 
         // Mint the tokens
