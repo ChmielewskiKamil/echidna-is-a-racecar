@@ -9,8 +9,9 @@ contract Deployment is Script {
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("ANVIL_PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
-        InSecureumToken token = new InSecureumToken();
-        address(0x30000).call{value: 500 ether}("");
+        new InSecureumToken();
+        (bool success,) = address(0x30000).call{value: 500 ether}("");
+        require(success, "Failed to send ether to 0x30000");
         vm.stopBroadcast();
     }
 }
