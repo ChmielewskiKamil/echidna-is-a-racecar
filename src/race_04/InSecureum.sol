@@ -4,6 +4,7 @@ import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "openzeppelin-contracts/contracts/utils/Context.sol";
 
+// @audit - This is like a base ERC20, you can override it to make your own ERC20
 contract InSecureum is Context, IERC20, IERC20Metadata {
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -25,6 +26,7 @@ contract InSecureum is Context, IERC20, IERC20Metadata {
     }
 
     function decimals() public view virtual override returns (uint8) {
+        // @audit - typical value is 18
         return 8;
     }
 
@@ -57,6 +59,8 @@ contract InSecureum is Context, IERC20, IERC20Metadata {
     ) public virtual override returns (bool) {
         uint256 currentAllowance = _allowances[_msgSender()][sender];
         if (currentAllowance != type(uint256).max) {
+            // @audit - Can't this underflow?
+            // @audit-issue - The check `currentAllowance >= amount` is missing
             unchecked {
                 _approve(sender, _msgSender(), currentAllowance - amount);
             }
@@ -72,7 +76,9 @@ contract InSecureum is Context, IERC20, IERC20Metadata {
 
     function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
         uint256 currentAllowance = _allowances[_msgSender()][spender];
+        // @audit-issue - It should be >=
         require(currentAllowance > subtractedValue, "ERC20: decreased allowance below zero");
+        // @audit - This could be optimized with unchecked
         _approve(_msgSender(), spender, currentAllowance - subtractedValue);
         return true;
     }
@@ -92,8 +98,11 @@ function _transfer(
         emit Transfer(sender, recipient, amount);
     }
 
+    // @audit - _mint shouldn't be external
     function _mint(address account, uint256 amount) external virtual {
+        // @audit-issue - missing 0 address check
         _totalSupply += amount;
+        // @audit-issue - Should be += instead of =
         _balances[account] = amount;
         emit Transfer(address(0), account, amount);
     }
@@ -105,6 +114,7 @@ function _transfer(
             _balances[account] = _balances[account] - amount;
         }
         _totalSupply -= amount;
+        // @audit-issue - Incorrect Event -> (params are in wrong order)
         emit Transfer(address(0), account, amount);
     }
 
@@ -113,8 +123,14 @@ function _transfer(
         address spender,
         uint256 amount
     ) internal virtual {
+        // @audit-issue - Spender is reversed with owner
+        // spender is the `to` addr
+        // owner is the `from` addr
         require(spender != address(0), "ERC20: approve from the zero address");
         require(owner != address(0), "ERC20: approve to the zero address");
+        // @audit-issue - This should be = instead of +=
+        // We want to set the allowance to the exact amount
+        // not increase it like in increaseAllowance
         _allowances[owner][spender] += amount;
         emit Approval(owner, spender, amount);
     }
